@@ -1,0 +1,208 @@
+<template>
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Institutes</h3>
+
+                    <div class="card-tools">
+                        <div class="input-group input-group-sm" style="width: 150px;">
+                            <input type="text" name="table_search" class="form-control float-right" v-model="search" placeholder="Search..." @input="resetPagination()">
+                        </div>
+                    </div>
+                </div>
+                <!-- /.card-header -->
+                <div class="card-body table-responsive p-0">
+                    <table class="table table-hover text-nowrap">
+                        <thead>
+                            <tr>
+                                <th v-for="column in columns" 
+                                    :key="column.name" 
+                                    @click="sortBy(column.name)"
+                                    :class="sortKey === column.name ? (sortOrders[column.name] > 0 ? 'sorting_asc' : 'sorting_desc') : 'sorting'"
+                                    style="width: 40%; cursor:pointer;">
+                                {{column.label}}</th>
+
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="institute in paginatedInstitutes" :key="institute.id">
+                                <td>{{institute.name}}</td>
+                                <td>{{institute.email}}</td>
+                                <td>{{institute.mobile_no}}</td>
+                                <td>{{institute.created_at}}</td>
+                                <td>
+                                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" aria-expanded="false"></a>
+                                    <div class="dropdown-menu">
+                                        <a class="dropdown-item text-primary" href="#"
+                                            @click="deleteUser(institute.id)">Delete User</a>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <!-- /.card-body -->
+                <div class="card-footer clearfix">
+                    <nav class="pagination" v-if="!tableShow.showdata">
+                        <span class="page-stats">{{pagination.from}} -
+                            {{pagination.to}} of {{pagination.total}}</span>
+                        <a v-if="pagination.prevPageUrl"
+                            class="btn btn-sm btn-primary pagination-previous" 
+                            @click="--pagination.currentPage"> Prev </a>
+
+                        <a class="btn btn-sm btn-primary pagination-previous" v-else disabled> Prev </a><a
+                            v-if="pagination.nextPageUrl" class="btn btn-sm pagination-next" @click="++pagination.currentPage">
+                            Next </a>
+                            
+                        <a class="btn btn-sm btn-primary pagination-next" v-else disabled> Next </a>
+                    </nav>
+                    <nav class="pagination" v-else>
+                        <span class="page-stats">
+                            {{pagination.from}} - {{pagination.to}} of {{filteredInstitutes.length}}
+                            <span v-if="`filteredInstitutes.length < pagination.total`"></span>
+                        </span>
+                        <a v-if="pagination.prevPage" class="btn btn-sm btn-primary pagination-previous"
+                            @click="--pagination.currentPage"> Prev </a>
+                        <a class="btn btn-sm pagination-previous btn-primary"
+                            v-else disabled> Prev </a>
+                        <a v-if="pagination.nextPage"
+                            class="btn btn-sm btn-primary pagination-next" @click="++pagination.currentPage"> Next </a>
+                        <a class="btn btn-sm pagination-next btn-primary" v-else disabled> Next </a>
+                    </nav>
+                </div>
+            </div>
+            <!-- /.card -->
+        </div>
+    </div>
+</template>
+
+<script>
+    export default {
+        created() {
+            this.getInstitutes();
+            Fire.$on('reloadInstitute', () => {
+                this.getInstitutes();
+            })
+        },
+        data() {
+            let sortOrders = {};
+            let columns = [
+                {
+                    label: 'Name',
+                    name: 'name'
+                }, 
+                {
+                    label: 'Email',
+                    name: 'email'
+                }, 
+                {
+                    label: 'Mobile',
+                    name: 'mobile_no'
+                }, 
+                {
+                    label: 'Date Added',
+                    name: 'created_at'
+                }, 
+            ];
+            columns.forEach((column) => {
+                sortOrders[column.name] = -1;
+            });
+            return {
+                institutes: [],
+                columns: columns,
+                sortKey: 'created_at',
+                sortOrders: sortOrders,
+                length: 10,
+                search: '',
+                tableShow: {
+                    showdata: true,
+                },
+                pagination: {
+                    currentPage: 1,
+                    total: '',
+                    nextPage: '',
+                    prevPage: '',
+                    from: '',
+                    to: ''
+                },
+            }
+        },
+        methods: {
+            deleteUser(id) {
+                axios.delete(`/users/${id}/delete`).then(() => {
+                    Fire.$emit('reloadInstitute');
+                    swal('Success!', 'User deleted', 'success')
+                }).catch(() => {
+                    swal('Failed', 'There was something wrong', 'warning');
+                });
+            },
+            getInstitutes() {
+                axios.get('/superadmin/institute/list-data', {
+                    params: this.tableShow
+                }).then(response => {
+                    console.log('The data: ', response.data);
+                    this.institutes = response.data;
+                    this.pagination.total = this.institutes.length;
+                }).catch(errors => {
+                    console.log(errors);
+                });
+            },
+            paginate(array, length, pageNumber) {
+                this.pagination.from = array.length ? ((pageNumber - 1) * length) + 1 : ' ';
+                this.pagination.to = pageNumber * length > array.length ? array.length : pageNumber * length;
+                this.pagination.prevPage = pageNumber > 1 ? pageNumber : '';
+                this.pagination.nextPage = array.length > this.pagination.to ? pageNumber + 1 : '';
+                return array.slice((pageNumber - 1) * length, pageNumber * length);
+            },
+            resetPagination() {
+                this.pagination.currentPage = 1;
+                this.pagination.prevPage = '';
+                this.pagination.nextPage = '';
+            },
+            sortBy(key) {
+                this.resetPagination();
+                this.sortKey = key;
+                this.sortOrders[key] = this.sortOrders[key] * -1;
+            },
+            getIndex(array, key, value) {
+                return array.findIndex(i => i[key] == value)
+            },
+        },
+        computed: {
+            filteredInstitutes() {
+                let institutes = this.institutes;
+                if (this.search) {
+                    institutes = institutes.filter((row) => {
+                        return Object.keys(row).some((key) => {
+                            return String(row[key]).toLowerCase().indexOf(this.search.toLowerCase()) > -
+                                1;
+                        })
+                    });
+                }
+                let sortKey = this.sortKey;
+                let order = this.sortOrders[sortKey] || 1;
+                if (sortKey) {
+                    institutes = institutes.slice().sort((a, b) => {
+                        let index = this.getIndex(this.columns, 'name', sortKey);
+                        a = String(a[sortKey]).toLowerCase();
+                        b = String(b[sortKey]).toLowerCase();
+                        if (this.columns[index].type && this.columns[index].type === 'date') {
+                            return (a === b ? 0 : new Date(a).getTime() > new Date(b).getTime() ? 1 : -1) *
+                                order;
+                        } else if (this.columns[index].type && this.columns[index].type === 'number') {
+                            return (+a === +b ? 0 : +a > +b ? 1 : -1) * order;
+                        } else {
+                            return (a === b ? 0 : a > b ? 1 : -1) * order;
+                        }
+                    });
+                }
+                return institutes;
+            },
+            paginatedInstitutes() {
+                return this.paginate(this.filteredInstitutes, this.length, this.pagination.currentPage);
+            }
+        }
+    };
+</script>

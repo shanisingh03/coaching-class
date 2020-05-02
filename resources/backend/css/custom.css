@@ -1,0 +1,10 @@
+.img-max {
+    max-width: 200px;
+}
+.img-max-table {
+    max-width: 100px;
+}
+.mycontent-left {
+    border-right: 1px dashed #333;
+    text-align: center;
+}
