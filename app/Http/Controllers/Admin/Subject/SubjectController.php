@@ -215,4 +215,21 @@ class SubjectController extends Controller
         }
     }
 
+    /**
+     * Get Subjects By Course Id
+     * @param $course_id
+     * @return JSON $subjects
+     * @author: Shani Singh
+     */
+    public function getSubjectByCourse($course_id)
+    {
+        $subjects = Subject::where('institute_id',$this->institute_id)
+                    ->whereHas('courses.course',function($q) use($course_id) {
+                        $q->where('course_id',$course_id);
+                    })
+                    ->get();
+
+        return response()->json(['data' => $subjects]);
+    }
+
 }

@@ -25,7 +25,17 @@
         class="nav-link {{Route::currentRouteName() == 'admin.subject.list' ? 'active' : ''}}  {{Route::currentRouteName() == 'admin.subject.create' ? 'active' : ''}} {{Route::currentRouteName() == 'admin.subject.edit' ? 'active' : ''}}">
         <i class="nav-icon fas fa-book"></i>
         <p>
-            Subject
+            Subjects
+        </p>
+    </a>
+</li>
+{{--  Chapter  --}}
+<li class="nav-item">
+    <a href="{{route('admin.chapter.list')}}"
+        class="nav-link {{Route::currentRouteName() == 'admin.chapter.list' ? 'active' : ''}}  {{Route::currentRouteName() == 'admin.chapter.create' ? 'active' : ''}} {{Route::currentRouteName() == 'admin.chapter.edit' ? 'active' : ''}}">
+        <i class="nav-icon fas fa-book-open"></i>
+        <p>
+            Chapters
         </p>
     </a>
 </li>

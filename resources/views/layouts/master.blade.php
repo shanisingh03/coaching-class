@@ -8,6 +8,7 @@
 
     <!-- CSRF Token -->
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta name="app-url" content="{{ env('APP_URL') }}">
 
     {{--  Icons  --}}
     <link rel="shortcut icon" type="image/x-icon" href="{{ asset('images/logo.png') }}">

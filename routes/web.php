@@ -93,6 +93,16 @@ Route::prefix('admin')->name('admin.')->namespace('Admin')->middleware(['auth', 
         Route::post('/store','SubjectController@storeSubject')->name('store');
         Route::get('/edit/{subject_id}','SubjectController@editSubject')->name('edit');
         Route::post('/update/{subject_id}','SubjectController@updateSubject')->name('update');
+        Route::get('/list-by-course/{course_id}','SubjectController@getSubjectByCourse')->name('list.by-course');
     });
 
+    // Chapter List
+    Route::prefix('chapter')->name('chapter.')->namespace('Chapter')->group(function() {
+        Route::get('/','ChapterController@getChapterList')->name('list');
+        Route::get('/{chapter_id}/details','ChapterController@getChapterDetails')->name('details');
+        Route::get('/create','ChapterController@createChapter')->name('create');
+        Route::post('/store','ChapterController@storeChapter')->name('store');
+        Route::get('/edit/{chapter_id}','ChapterController@editChapter')->name('edit');
+        Route::post('/update/{chapter_id}','ChapterController@updateChapter')->name('update');
+    });
 });

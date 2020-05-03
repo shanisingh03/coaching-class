@@ -50,3 +50,15 @@ window.axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
 $(document).ready(function(){
     $(".loading").hide();
 });
+
+$( document ).ajaxStart(function() {
+    $( ".loading" ).show();
+});
+
+$( document ).ajaxComplete(function() {
+    $( ".loading" ).hide();
+});
+
+$.ajaxSetup({
+    url: $('meta[name="app-url"]').attr('content')
+});
